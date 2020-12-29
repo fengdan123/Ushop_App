@@ -93,6 +93,7 @@ export default {
       tian_role: "tian_role",
       get_role_req: "get_role_req",
       gai_role_one_req: "gai_role_one_req",
+      tchu_login: "tchu_login",
     }),
     close() {
       this.role = {
@@ -119,6 +120,20 @@ export default {
       obj.menus = JSON.stringify(obj.menus);
       this.gai_role_one_req(obj).then((res) => {
         if (res.data.code == 200) {
+          if (this.user_info.roleid == this.role.id) {
+            let lis = this.user_info.menus.map((item) => item.id);
+            if (lis.length != this.role.menus.length) {
+              this.tchu_login({});
+            } else {
+              if (
+                !lis.every((item) =>
+                  this.role.menus.some((i) => i.id == item.id)
+                )
+              ) {
+                this.tchu_login({});
+              }
+            }
+          }
           this.get_role_req().then((res) => {
             if (res.data.code == 200) {
               this.$store.state.role_dialogFormVisible = false;
@@ -131,6 +146,8 @@ export default {
   computed: {
     ...mapGetters({
       role_dialogFormVisible: "gengxin_role_dialogFormVisible",
+      user_info: "gengxin_user_info",
+      role_one_req: "gengxin_role_one_req",
     }),
   },
   watch: {

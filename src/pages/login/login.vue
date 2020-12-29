@@ -17,6 +17,7 @@
 
 <script>
 import req from "@/utils/http";
+import {mapActions} from "vuex"
 export default {
   data() {
     return {
@@ -27,6 +28,9 @@ export default {
     };
   },
   methods: {
+    ...mapActions({
+      tchu_login:"tchu_login"
+    }),
     login() {
       req({
         url: "/api/userlogin",
@@ -35,8 +39,7 @@ export default {
         isshow: true,
       }).then((res) => {
         if (res.data.code == 200) {
-          this.$store.state.user_info = res.data.list;
-          sessionStorage.setItem("user_info",JSON.stringify(res.data.list))
+          this.tchu_login(res.data.list)
           this.$router.push("/index");
         }
       });

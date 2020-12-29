@@ -1,4 +1,5 @@
 import req from "@/utils/http"
+import router from "@/router"
 export let actions = {
     //menu
     get_menu_req(context, istree) {
@@ -10,6 +11,7 @@ export let actions = {
         }).then(res => {
             if (res.data.code == 200) {
                 context.state.menu_req = res.data.list
+                console.log(res)
             }
             return res
         })
@@ -535,4 +537,15 @@ export let actions = {
             isshow: true
         })
     },
+
+    //登录
+    tchu_login(context, obj) {
+        context.state.user_info = obj
+        if (obj.token) {
+            sessionStorage.setItem("user_info", JSON.stringify(obj))
+        } else {
+            sessionStorage.removeItem("user_info")
+            router.push("/login")
+        }
+    }
 }

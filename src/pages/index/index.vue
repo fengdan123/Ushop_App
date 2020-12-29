@@ -47,7 +47,8 @@
               <i class="el-icon-setting" style="margin-right: 15px"></i>
             </el-dropdown-menu>
           </el-dropdown>
-          <span>{{ $store.state.user_info.username }}</span>
+          <span>{{ $store.state.user_info.username }}</span
+          ><el-button type="danger" @click="tchu">退出登录</el-button>
         </el-header>
         <el-main>
           <el-breadcrumb separator=">">
@@ -74,7 +75,11 @@ export default {
   methods: {
     ...mapActions({
       get_list: "get_menu_req",
+      tchu_login:"tchu_login"
     }),
+    tchu() {
+      this.tchu_login({})
+    },
   },
   data() {
     return {
@@ -83,7 +88,7 @@ export default {
   },
   mounted() {
     this.get_list(true).then((res) => {
-      this.obj = res.data.list;
+      this.obj = JSON.parse(JSON.stringify(res.data.list));
       this.obj.forEach((item) => {
         if (item.children && item.children.length != 0) {
           let objj = [];
