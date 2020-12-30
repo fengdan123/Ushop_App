@@ -48,9 +48,7 @@ export default {
       sc_banner_one_req: "sc_banner_one_req",
     }),
     fn1(id) {
-      this.get_banner_one_req(id).then(res=>{
-        console.log(res)
-      });
+      this.get_banner_one_req(id)
     },
     shanc(id) {
       this.sc_banner_one_req(id).then((res) => {

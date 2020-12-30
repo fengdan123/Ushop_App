@@ -6,11 +6,15 @@
       :visible.sync="$store.state.member_dialogFormVisible"
       @close="close"
     >
-      <el-form :model="member">
-        <el-form-item label="手机号" :label-width="formLabelWidth">
+      <el-form :model="member" :rules="rules" ref="ruleForm">
+        <el-form-item label="手机号" :label-width="formLabelWidth" prop="phone">
           <el-input v-model="member.phone" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="昵称" :label-width="formLabelWidth">
+        <el-form-item
+          label="昵称"
+          :label-width="formLabelWidth"
+          prop="nickname"
+        >
           <el-input v-model="member.nickname" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="密码" :label-width="formLabelWidth">
@@ -52,6 +56,10 @@ export default {
       },
       mma: "",
       formLabelWidth: "120px",
+      rules: {
+        phone: [{ required: true, message: "请输入手机号", trigger: "input" }],
+        nickname: [{ required: true, message: "请输入昵称", trigger: "input" }],
+      },
     };
   },
   methods: {
@@ -70,18 +78,25 @@ export default {
         status: 1,
       };
       this.mma = "";
+      this.$refs.ruleForm.resetFields();
     },
     gai() {
-      if (this.mma.replace(/\s*/g,"") != "") {
-        this.member.password = this.mma;
-      }
-      this.gai_member_one_req(this.member).then((res) => {
-        if (res.data.code == 200) {
-          this.get_member_list(true).then((res) => {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          if (this.mma.replace(/\s*/g, "") != "") {
+            this.member.password = this.mma;
+          }
+          this.gai_member_one_req(this.member).then((res) => {
             if (res.data.code == 200) {
-              this.$store.state.member_dialogFormVisible = false;
+              this.get_member_list(true).then((res) => {
+                if (res.data.code == 200) {
+                  this.$store.state.member_dialogFormVisible = false;
+                }
+              });
             }
           });
+        } else {
+          return false;
         }
       });
     },

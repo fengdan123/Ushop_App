@@ -6,8 +6,12 @@
       :visible.sync="$store.state.spec_dialogFormVisible"
       @close="close"
     >
-      <el-form :model="spec">
-        <el-form-item label="规格名称" :label-width="formLabelWidth">
+      <el-form :model="spec" :rules="rules" ref="ruleForm">
+        <el-form-item
+          label="规格名称"
+          :label-width="formLabelWidth"
+          prop="specsname"
+        >
           <el-input v-model="spec.specsname" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="规格属性" :label-width="formLabelWidth">
@@ -40,7 +44,7 @@
           :key="index"
         >
           <div style="display: flex">
-            <input v-model="spec.attrs[index]" type="text" style="flex: 1" />
+            <el-input v-model="spec.attrs[index]" type="text" style="flex: 1" />
             <el-button type="danger" style="height: 42px" @click="del(index)"
               >删除</el-button
             >
@@ -86,6 +90,11 @@ export default {
         status: 1,
       },
       formLabelWidth: "120px",
+      rules: {
+        specsname: [
+          { required: true, message: "请输入规格名称", trigger: "input" },
+        ],
+      },
     };
   },
   methods: {
@@ -95,6 +104,7 @@ export default {
         attrs: [""],
         status: 1,
       };
+      this.$refs.ruleForm.resetFields();
     },
     ...mapActions({
       tian_spec: "tian_spec",
@@ -104,36 +114,52 @@ export default {
       get_spec_total_req: "get_spec_total_req",
     }),
     tian() {
-      let obj = JSON.parse(JSON.stringify(this.spec));
-      obj.attrs = JSON.stringify(obj.attrs);
-      this.tian_spec(obj).then((res) => {
-        if (res.data.code == 200) {
-          this.get_spec_total_req().then((res) => {
+      if(!this.spec.attrs.every(item=>item != "")){
+        alert("属性值不能为空")
+        return
+      }
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          let obj = JSON.parse(JSON.stringify(this.spec));
+          obj.attrs = JSON.stringify(obj.attrs);
+          this.tian_spec(obj).then((res) => {
+            if (res.data.code == 200) {
+              this.get_spec_total_req().then((res) => {
+                if (res.data.code == 200) {
+                  this.get_spec_req({
+                    size: this.$store.state.spec_size,
+                    page: this.$store.state.spec_page,
+                  }).then((res) => {
+                    this.$store.state.spec_dialogFormVisible = false;
+                  });
+                }
+              });
+            }
+          });
+        } else {
+          return false;
+        }
+      });
+    },
+    gai() {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          let obj = JSON.parse(JSON.stringify(this.spec));
+          obj.attrs = JSON.stringify(obj.attrs);
+          this.gai_spec_one_req(obj).then((res) => {
             if (res.data.code == 200) {
               this.get_spec_req({
                 size: this.$store.state.spec_size,
                 page: this.$store.state.spec_page,
               }).then((res) => {
-                this.$store.state.spec_dialogFormVisible = false;
+                if (res.data.code == 200) {
+                  this.$store.state.spec_dialogFormVisible = false;
+                }
               });
             }
           });
-        }
-      });
-    },
-    gai() {
-      let obj = JSON.parse(JSON.stringify(this.spec));
-      obj.attrs = JSON.stringify(obj.attrs);
-      this.gai_spec_one_req(obj).then((res) => {
-        if (res.data.code == 200) {
-          this.get_spec_req({
-            size: this.$store.state.spec_size,
-            page: this.$store.state.spec_page,
-          }).then((res) => {
-            if (res.data.code == 200) {
-              this.$store.state.spec_dialogFormVisible = false;
-            }
-          });
+        } else {
+          return false;
         }
       });
     },

@@ -7,13 +7,17 @@
       @close="close"
       @opened="opened"
     >
-      <el-form :model="goods">
-        <el-form-item label="一级分类" :label-width="formLabelWidth">
+      <el-form :model="goods" :rules="rules" ref="ruleForm">
+        <el-form-item
+          label="一级分类"
+          :label-width="formLabelWidth"
+          prop="first_cateid"
+        >
           <el-select
             v-model="goods.first_cateid"
             @change="change(goods.first_cateid, true)"
           >
-            <el-option :value="0" disabled label="---请选择---"
+            <el-option value disabled label="---请选择---"
               >---请选择---</el-option
             >
             <el-option
@@ -24,12 +28,16 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="二级分类" :label-width="formLabelWidth">
+        <el-form-item
+          label="二级分类"
+          :label-width="formLabelWidth"
+          prop="second_cateid"
+        >
           <el-select
             v-model="goods.second_cateid"
             :disabled="second_cate.length != 0 ? false : true"
           >
-            <el-option :value="0" disabled label="---请选择---"
+            <el-option value disabled label="---请选择---"
               >---请选择---</el-option
             >
             <div v-if="goods.first_cateid != 0">
@@ -42,16 +50,24 @@
             </div>
           </el-select>
         </el-form-item>
-        <el-form-item label="商品名称" :label-width="formLabelWidth">
+        <el-form-item
+          label="商品名称"
+          :label-width="formLabelWidth"
+          prop="goodsname"
+        >
           <el-input v-model="goods.goodsname" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="价格" :label-width="formLabelWidth">
+        <el-form-item label="价格" :label-width="formLabelWidth" prop="price">
           <el-input v-model="goods.price" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="市场价格" :label-width="formLabelWidth">
+        <el-form-item
+          label="市场价格"
+          :label-width="formLabelWidth"
+          prop="market_price"
+        >
           <el-input v-model="goods.market_price" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="图片" :label-width="formLabelWidth">
+        <el-form-item label="图片" :label-width="formLabelWidth" prop="img">
           <el-upload
             class="avatar-uploader"
             action="https://jsonplaceholder.typicode.com/posts/"
@@ -69,12 +85,16 @@
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
         </el-form-item>
-        <el-form-item label="商品规格" :label-width="formLabelWidth">
+        <el-form-item
+          label="商品规格"
+          :label-width="formLabelWidth"
+          prop="specsid"
+        >
           <el-select
             v-model="goods.specsid"
             @change="changespec(goods.specsid, true)"
           >
-            <el-option :value="0" disabled label="---请选择---"
+            <el-option value disabled label="---请选择---"
               >---请选择---</el-option
             >
             <el-option
@@ -85,13 +105,17 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="规格属性" :label-width="formLabelWidth">
+        <el-form-item
+          label="规格属性"
+          :label-width="formLabelWidth"
+          prop="specsattr"
+        >
           <el-select
             v-model="goods.specsattr"
             :disabled="second_spec.length != 0 ? false : true"
             multiple
           >
-            <el-option :value="0" disabled label="---请选择---"
+            <el-option value disabled label="---请选择---"
               >---请选择---</el-option
             >
             <div v-if="goods.specsid != 0">
@@ -112,7 +136,11 @@
           <el-radio :label="1" v-model="goods.ishot">是</el-radio>
           <el-radio :label="2" v-model="goods.ishot">否</el-radio>
         </el-form-item>
-        <el-form-item label="商品描述" :label-width="formLabelWidth">
+        <el-form-item
+          label="商品描述"
+          :label-width="formLabelWidth"
+          prop="description"
+        >
           <div id="editor" v-if="$store.state.goods_dialogFormVisible"></div>
         </el-form-item>
         <el-form-item label="状态" :label-width="formLabelWidth">
@@ -150,15 +178,15 @@ export default {
   data() {
     return {
       goods: {
-        first_cateid: 0,
-        second_cateid: 0,
+        first_cateid: "",
+        second_cateid: "",
         goodsname: "",
         price: "",
         market_price: "",
         img: null,
         description: "",
-        specsid: 0,
-        specsattr: [],
+        specsid: "",
+        specsattr: "",
         isnew: 1,
         ishot: 1,
         status: 1,
@@ -167,6 +195,33 @@ export default {
       second_cate: [],
       second_spec: [],
       formLabelWidth: "120px",
+      rules: {
+        first_cateid: [
+          { required: true, message: "请选择一级分类", trigger: "change" },
+        ],
+        second_cateid: [
+          { required: true, message: "请选择二级分类", trigger: "change" },
+        ],
+        goodsname: [
+          { required: true, message: "请输入商品名称", trigger: "input" },
+        ],
+        price: [
+          { required: true, message: "请输入商品价格", trigger: "input" },
+        ],
+        market_price: [
+          { required: true, message: "请输入商品市场价格", trigger: "input" },
+        ],
+        img: [{ required: true, message: "请放入图片", trigger: "change" }],
+        specsid: [
+          { required: true, message: "请选择商品规格", trigger: "change" },
+        ],
+        specsattr: [
+          { required: true, message: "请选择商品属性", trigger: "change" },
+        ],
+        description: [
+          { required: true, message: "请选择商品描述", trigger: "input" },
+        ],
+      },
     };
   },
   methods: {
@@ -181,39 +236,45 @@ export default {
     opened() {
       this.editor = new E("#editor");
       this.editor.create();
-      this.editor.txt.html(this.goods.description)
+      this.editor.txt.html(this.goods.description);
     },
     tian() {
-      let data = new FormData();
       this.goods.description = this.editor.txt.html();
-      //let obj = {...this.goods}
-      let obj = JSON.parse(JSON.stringify(this.goods));
-      obj.img = this.goods.img;
-      for (let item in obj) {
-        if (item == "specsattr") {
-          obj[item] = JSON.stringify(obj[item]);
-        }
-        data.append(item, obj[item]);
-      }
-      this.tian_goods(data).then((res) => {
-        if (res.data.code == 200) {
-          this.get_goods_list(true).then((res) => {
-            this.$store.state.goods_dialogFormVisible = false;
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          //let obj = {...this.goods}
+          let data = new FormData();
+          let obj = JSON.parse(JSON.stringify(this.goods));
+          obj.img = this.goods.img;
+          for (let item in obj) {
+            if (item == "specsattr") {
+              obj[item] = JSON.stringify(obj[item]);
+            }
+            data.append(item, obj[item]);
+          }
+          this.tian_goods(data).then((res) => {
+            if (res.data.code == 200) {
+              this.get_goods_list(true).then((res) => {
+                this.$store.state.goods_dialogFormVisible = false;
+              });
+            }
           });
+        } else {
+          return false;
         }
       });
     },
     close() {
       this.goods = {
-        first_cateid: 0,
-        second_cateid: 0,
+        first_cateid: "",
+        second_cateid: "",
         goodsname: "",
         price: "",
         market_price: "",
         img: null,
         description: "",
-        specsid: 0,
-        specsattr: [],
+        specsid: "",
+        specsattr: "",
         isnew: 1,
         ishot: 1,
         status: 1,
@@ -221,21 +282,28 @@ export default {
       this.bs64 = "";
       this.second_cate = [];
       this.second_spec = [];
+      this.$refs.ruleForm.resetFields();
     },
     gai() {
-      let data = new FormData();
-      //let obj = {...this.goods}
       this.goods.description = this.editor.txt.html();
-      for (let item in this.goods) {
-        data.append(item, this.goods[item]);
-      }
-      this.gai_goods_one_req(data).then((res) => {
-        if (res.data.code == 200) {
-          this.get_goods_list(true).then((res) => {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          let data = new FormData();
+          //let obj = {...this.goods}
+          for (let item in this.goods) {
+            data.append(item, this.goods[item]);
+          }
+          this.gai_goods_one_req(data).then((res) => {
             if (res.data.code == 200) {
-              this.$store.state.goods_dialogFormVisible = false;
+              this.get_goods_list(true).then((res) => {
+                if (res.data.code == 200) {
+                  this.$store.state.goods_dialogFormVisible = false;
+                }
+              });
             }
           });
+        } else {
+          return false;
         }
       });
     },
@@ -277,7 +345,7 @@ export default {
     },
     change(id, b) {
       if (b) {
-        this.goods.second_cateid = 0;
+        this.goods.second_cateid = "";
       }
       let lis = this.cate_req.find((item) => {
         return item.id == id;
@@ -293,7 +361,7 @@ export default {
     },
     changespec(id, b) {
       if (b) {
-        this.goods.specsattr = 0;
+        this.goods.specsattr = "";
       }
       let lis = this.spec_req.find((item) => {
         return item.id == id;

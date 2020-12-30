@@ -2,6 +2,7 @@ import Vue from "vue"
 import axios from "axios"
 import qs from "qs"
 import router from '../router'
+import store from "../store"
 let sl = new Vue({})
 let str = "/api"
 Vue.prototype.$pre = "http://localhost:3000"
@@ -13,11 +14,8 @@ let hshu = (res, obj) => {
     }
     if (res.data.code == 403) {
         sl.$message(res.data.msg)
-        setTimeout(() => {
-
-            router.push("/login");
-        }, 2000);
-        return
+        store.dispatch("tchu_login", {})
+        return res
     }
     obj.isshow ? sl.$message(res.data.msg) : ""
     return res

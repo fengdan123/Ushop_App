@@ -108,9 +108,7 @@ export default {
     this.get_spec_req({
       size: this.$store.state.spec_size,
       page: this.$store.state.spec_page,
-    }).then((res) => {
-      console.log(res);
-    });
+    })
   },
 };
 </script>

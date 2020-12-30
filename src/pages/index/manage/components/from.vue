@@ -6,8 +6,12 @@
       :visible.sync="$store.state.manage_dialogFormVisible"
       @close="close"
     >
-      <el-form :model="manage">
-        <el-form-item label="所属角色" :label-width="formLabelWidth">
+      <el-form :model="manage" :rules="rules" ref="ruleForm">
+        <el-form-item
+          label="所属角色"
+          :label-width="formLabelWidth"
+          prop="roleid"
+        >
           <el-select v-model="manage.roleid">
             <el-option
               v-for="i in role_req"
@@ -17,10 +21,18 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="用户名" :label-width="formLabelWidth">
+        <el-form-item
+          label="用户名"
+          :label-width="formLabelWidth"
+          prop="username"
+        >
           <el-input v-model="manage.username" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="密码" :label-width="formLabelWidth">
+        <el-form-item
+          label="密码"
+          :label-width="formLabelWidth"
+          prop="password"
+        >
           <el-input v-model="manage.password" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="状态" :label-width="formLabelWidth">
@@ -63,6 +75,13 @@ export default {
         roleid: "",
       },
       formLabelWidth: "120px",
+      rules: {
+        username: [
+          { required: true, message: "请输入用户名称", trigger: "blur" },
+        ],
+        password: [{ required: true, message: "请输入密码", trigger: "blur" }],
+        roleid: [{ required: true, message: "请选择角色", trigger: "change" }],
+      },
     };
   },
   methods: {
@@ -80,28 +99,47 @@ export default {
         status: 1,
         roleid: "",
       };
+      this.$refs.ruleForm.resetFields();
     },
     tian() {
-      this.tian_manage(this.manage).then((res) => {
-        if (res.data.code == 200) {
-          this.get_manage_total_req().then(res=>{
-            if(res.data.code == 200){
-              this.get_manage_req({size:this.$store.state.manage_size,page:this.$store.state.manage_page}).then(res=>{
-                this.$store.state.manage_dialogFormVisible = false;
-              })
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          this.tian_manage(this.manage).then((res) => {
+            if (res.data.code == 200) {
+              this.get_manage_total_req().then((res) => {
+                if (res.data.code == 200) {
+                  this.get_manage_req({
+                    size: this.$store.state.manage_size,
+                    page: this.$store.state.manage_page,
+                  }).then((res) => {
+                    this.$store.state.manage_dialogFormVisible = false;
+                  });
+                }
+              });
             }
-          })
+          });
+        } else {
+          return false;
         }
       });
     },
     gai() {
-      this.gai_manage_one_req(this.manage).then((res) => {
-        if (res.data.code == 200) {
-          this.get_manage_req({size:this.$store.state.manage_size,page:this.$store.state.manage_page}).then((res) => {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          this.gai_manage_one_req(this.manage).then((res) => {
             if (res.data.code == 200) {
-              this.$store.state.manage_dialogFormVisible = false;
+              this.get_manage_req({
+                size: this.$store.state.manage_size,
+                page: this.$store.state.manage_page,
+              }).then((res) => {
+                if (res.data.code == 200) {
+                  this.$store.state.manage_dialogFormVisible = false;
+                }
+              });
             }
           });
+        } else {
+          return false;
         }
       });
     },

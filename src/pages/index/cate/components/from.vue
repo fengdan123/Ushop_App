@@ -6,7 +6,7 @@
       :visible.sync="$store.state.cate_dialogFormVisible"
       @close="close"
     >
-      <el-form :model="cate">
+      <el-form :model="cate" :rules="rules" ref="ruleForm">
         <el-form-item label="上级分类" :label-width="formLabelWidth">
           <el-select v-model="cate.pid">
             <el-option :value="0" label="顶级分类"></el-option>
@@ -18,10 +18,19 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="分类名称" :label-width="formLabelWidth">
+        <el-form-item
+          label="分类名称"
+          :label-width="formLabelWidth"
+          prop="catename"
+        >
           <el-input v-model="cate.catename" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="图片" :label-width="formLabelWidth">
+        <el-form-item
+          label="图片"
+          :label-width="formLabelWidth"
+          prop="img"
+          v-if="cate.pid != 0"
+        >
           <el-upload
             class="avatar-uploader"
             action="https://jsonplaceholder.typicode.com/posts/"
@@ -30,7 +39,6 @@
             :before-upload="beforeAvatarUpload"
             ref="uploader"
             :on-progress="qx"
-            :disabled="cate.pid == 0 ? true : false"
           >
             <img
               v-if="cate.img != null && cate.img != 'null'"
@@ -81,6 +89,12 @@ export default {
       },
       bs64: "",
       formLabelWidth: "120px",
+      rules: {
+        catename: [
+          { required: true, message: "请输入分类名称", trigger: "input" },
+        ],
+        img: [{ required: true, message: "请放入图片", trigger: "chnage" }],
+      },
     };
   },
   methods: {
@@ -91,15 +105,21 @@ export default {
       gai_cate_one_req: "gai_cate_one_req",
     }),
     tian() {
-      let data = new FormData();
-      for (let item in this.cate) {
-        data.append(item, this.cate[item]);
-      }
-      this.tian_cate(data).then((res) => {
-        if (res.data.code == 200) {
-          this.get_cate_list(true).then((res) => {
-            this.$store.state.cate_dialogFormVisible = false;
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          let data = new FormData();
+          for (let item in this.cate) {
+            data.append(item, this.cate[item]);
+          }
+          this.tian_cate(data).then((res) => {
+            if (res.data.code == 200) {
+              this.get_cate_list(true).then((res) => {
+                this.$store.state.cate_dialogFormVisible = false;
+              });
+            }
           });
+        } else {
+          return false;
         }
       });
     },
@@ -111,19 +131,26 @@ export default {
         status: 1,
       };
       this.bs64 = "";
+      this.$refs.ruleForm.resetFields();
     },
     gai() {
-      let data = new FormData();
-      for (let item in this.cate) {
-        data.append(item, this.cate[item]);
-      }
-      this.gai_cate_one_req(data).then((res) => {
-        if (res.data.code == 200) {
-          this.get_cate_list(true).then((res) => {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          let data = new FormData();
+          for (let item in this.cate) {
+            data.append(item, this.cate[item]);
+          }
+          this.gai_cate_one_req(data).then((res) => {
             if (res.data.code == 200) {
-              this.$store.state.cate_dialogFormVisible = false;
+              this.get_cate_list(true).then((res) => {
+                if (res.data.code == 200) {
+                  this.$store.state.cate_dialogFormVisible = false;
+                }
+              });
             }
           });
+        } else {
+          return false;
         }
       });
     },
@@ -175,7 +202,7 @@ export default {
         if (!this.$store.state.cate_is_tian) {
           this.cate = this.$store.state.cate_one_req;
           this.cate.id = this.$store.state.cate_id;
-          this.bs64 = this.$pre + this.cate.img
+          this.bs64 = this.$pre + this.cate.img;
         }
       }
     },

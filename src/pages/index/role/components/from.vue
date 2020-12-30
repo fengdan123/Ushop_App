@@ -6,8 +6,8 @@
       :visible.sync="$store.state.role_dialogFormVisible"
       @close="close"
     >
-      <el-form :model="role">
-        <el-form-item label="角色名称" :label-width="formLabelWidth">
+      <el-form :model="role" :rules="rules" ref="ruleForm">
+        <el-form-item label="角色名称" :label-width="formLabelWidth" prop="rolename">
           <el-input v-model="role.rolename" autocomplete="off"></el-input>
         </el-form-item>
         <!-- <el-form-item label="角色权限" :label-width="formLabelWidth">
@@ -33,7 +33,7 @@
             </div>
           </el-select>
         </el-form-item> -->
-        <el-form-item label="角色权限" :label-width="formLabelWidth">
+        <el-form-item label="角色权限" :label-width="formLabelWidth" prop="menus">
           <div v-for="item in $store.state.menu_req" :key="item.id">
             <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll">{{
               item.title
@@ -86,6 +86,12 @@ export default {
       formLabelWidth: "120px",
       checkAll: false,
       isIndeterminate: true,
+      rules: {
+        rolename: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
+        menus: [
+          { required: true, message: "请选择角色权限", trigger: "change" },
+        ],
+      },
     };
   },
   methods: {
@@ -101,44 +107,57 @@ export default {
         menus: [],
         status: 1,
       };
+      this.$refs.ruleForm.resetFields();
     },
     tian() {
-      let obj = JSON.parse(JSON.stringify(this.role));
-      obj.menus = JSON.stringify(obj.menus);
-      this.tian_role(obj).then((res) => {
-        if (res.data.code == 200) {
-          this.get_role_req().then((res) => {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          let obj = JSON.parse(JSON.stringify(this.role));
+          obj.menus = JSON.stringify(obj.menus);
+          this.tian_role(obj).then((res) => {
             if (res.data.code == 200) {
-              this.$store.state.role_dialogFormVisible = false;
+              this.get_role_req().then((res) => {
+                if (res.data.code == 200) {
+                  this.$store.state.role_dialogFormVisible = false;
+                }
+              });
             }
           });
+        } else {
+          return false;
         }
       });
     },
     gai() {
-      let obj = JSON.parse(JSON.stringify(this.role));
-      obj.menus = JSON.stringify(obj.menus);
-      this.gai_role_one_req(obj).then((res) => {
-        if (res.data.code == 200) {
-          if (this.user_info.roleid == this.role.id) {
-            let lis = this.user_info.menus.map((item) => item.id);
-            if (lis.length != this.role.menus.length) {
-              this.tchu_login({});
-            } else {
-              if (
-                !lis.every((item) =>
-                  this.role.menus.some((i) => i.id == item.id)
-                )
-              ) {
-                this.tchu_login({});
-              }
-            }
-          }
-          this.get_role_req().then((res) => {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          let obj = JSON.parse(JSON.stringify(this.role));
+          obj.menus = JSON.stringify(obj.menus);
+          this.gai_role_one_req(obj).then((res) => {
             if (res.data.code == 200) {
-              this.$store.state.role_dialogFormVisible = false;
+              if (this.user_info.roleid == this.role.id) {
+                let lis = this.user_info.menus.map((item) => item.id);
+                if (lis.length != this.role.menus.length) {
+                  this.tchu_login({});
+                } else {
+                  if (
+                    !lis.every((item) =>
+                      this.role.menus.some((i) => i.id == item.id)
+                    )
+                  ) {
+                    this.tchu_login({});
+                  }
+                }
+              }
+              this.get_role_req().then((res) => {
+                if (res.data.code == 200) {
+                  this.$store.state.role_dialogFormVisible = false;
+                }
+              });
             }
           });
+        } else {
+          return false;
         }
       });
     },

@@ -11,7 +11,6 @@ export let actions = {
         }).then(res => {
             if (res.data.code == 200) {
                 context.state.menu_req = res.data.list
-                console.log(res)
             }
             return res
         })
@@ -348,6 +347,7 @@ export let actions = {
                 context.state.banner_id = id
                 context.state.banner_dialogFormVisible = true;
                 context.state.banner_is_tian = false;
+                return res
             }
         })
     },

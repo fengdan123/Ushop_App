@@ -6,11 +6,11 @@
       :visible.sync="$store.state.banner_dialogFormVisible"
       @close="close"
     >
-      <el-form :model="banner">
-        <el-form-item label="标题" :label-width="formLabelWidth">
+      <el-form :model="banner" :rules="rules" ref="ruleForm">
+        <el-form-item label="标题" :label-width="formLabelWidth" prop="title">
           <el-input v-model="banner.title" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="图片" :label-width="formLabelWidth">
+        <el-form-item label="图片" :label-width="formLabelWidth" prop="img">
           <el-upload
             class="avatar-uploader"
             action="https://jsonplaceholder.typicode.com/posts/"
@@ -53,7 +53,7 @@
         >
         <el-button type="primary" @click="gai()" v-else>修 改</el-button>
       </div>
-      {{banner}}
+      {{ banner }}
     </el-dialog>
   </div>
 </template>
@@ -70,6 +70,10 @@ export default {
       },
       bs64: "",
       formLabelWidth: "120px",
+      rules: {
+        title: [{ required: true, message: "请输入标题", trigger: "input" }],
+        img: [{ required: true, message: "请放入图片", trigger: "change" }],
+      },
     };
   },
   methods: {
@@ -80,15 +84,21 @@ export default {
       gai_banner_one_req: "gai_banner_one_req",
     }),
     tian() {
-      let data = new FormData();
-      for (let item in this.banner) {
-        data.append(item, this.banner[item]);
-      }
-      this.tian_banner(data).then((res) => {
-        if (res.data.code == 200) {
-          this.get_banner_list(true).then((res) => {
-            this.$store.state.banner_dialogFormVisible = false;
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          let data = new FormData();
+          for (let item in this.banner) {
+            data.append(item, this.banner[item]);
+          }
+          this.tian_banner(data).then((res) => {
+            if (res.data.code == 200) {
+              this.get_banner_list(true).then((res) => {
+                this.$store.state.banner_dialogFormVisible = false;
+              });
+            }
           });
+        } else {
+          return false;
         }
       });
     },
@@ -97,21 +107,28 @@ export default {
         title: "",
         img: null,
         status: 1,
-      },
+      };
       this.bs64 = "";
+      this.$refs.ruleForm.resetFields();
     },
     gai() {
-      let data = new FormData();
-      for (let item in this.banner) {
-        data.append(item, this.banner[item]);
-      }
-      this.gai_banner_one_req(data).then((res) => {
-        if (res.data.code == 200) {
-          this.get_banner_list(true).then((res) => {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          let data = new FormData();
+          for (let item in this.banner) {
+            data.append(item, this.banner[item]);
+          }
+          this.gai_banner_one_req(data).then((res) => {
             if (res.data.code == 200) {
-              this.$store.state.banner_dialogFormVisible = false;
+              this.get_banner_list(true).then((res) => {
+                if (res.data.code == 200) {
+                  this.$store.state.banner_dialogFormVisible = false;
+                }
+              });
             }
           });
+        } else {
+          return false;
         }
       });
     },
@@ -158,15 +175,15 @@ export default {
     }),
   },
   watch: {
-    // banner_dialogFormVisible(newVal, oldVal) {
-    //   if (newVal) {
-    //     if (!this.$store.state.banner_is_tian) {
-    //       this.banner = this.$store.state.banner_one_req;
-    //       this.banner.id = this.$store.state.banner_id;
-    //       this.bs64 = this.$pre + this.banner.img
-    //     }
-    //   }
-    // },
+    banner_dialogFormVisible(newVal, oldVal) {
+      if (newVal) {
+        if (!this.$store.state.banner_is_tian) {
+          this.banner = this.$store.state.banner_one_req;
+          this.banner.id = this.$store.state.banner_id;
+          this.bs64 = this.$pre + this.banner.img;
+        }
+      }
+    },
   },
 };
 </script>

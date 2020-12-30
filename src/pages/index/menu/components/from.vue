@@ -6,8 +6,12 @@
       :visible.sync="$store.state.dialogFormVisible"
       @close="close"
     >
-      <el-form :model="menu">
-        <el-form-item label="菜单名称" :label-width="formLabelWidth">
+      <el-form :model="menu" :rules="rules" ref="ruleForm">
+        <el-form-item
+          label="菜单名称"
+          :label-width="formLabelWidth"
+          prop="title"
+        >
           <el-input v-model="menu.title" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="上级菜单" :label-width="formLabelWidth">
@@ -32,6 +36,7 @@
           label="菜单图标"
           :label-width="formLabelWidth"
           v-if="menu.type == 1"
+          prop="icon"
         >
           <el-select v-model="menu.icon">
             <el-option
@@ -44,7 +49,12 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="菜单地址" :label-width="formLabelWidth" v-else>
+        <el-form-item
+          label="菜单地址"
+          prop="url"
+          :label-width="formLabelWidth"
+          v-else
+        >
           <el-select v-model="menu.url">
             <el-option
               v-for="item in indexRoutes"
@@ -99,20 +109,29 @@ export default {
         "el-icon-s-platform",
         "el-icon-s-order",
       ],
-      indexRoutes: [
-        "home",
-        "menu",
-        "manage",
-        "role",
-      ],
+      indexRoutes: ["menu", "manage", "role"],
+      rules: {
+        title: [{ required: true, message: "请输入菜单名称", trigger: "blur" }],
+        icon: [
+          { required: true, message: "请选择菜单图标", trigger: "change" },
+        ],
+        url: [{ required: true, message: "请选择菜单地址", trigger: "change" }],
+      },
     };
   },
   methods: {
     tian() {
-      this.$store.state.dialogFormVisible = false;
-      this.tian_menu(this.menu).then((res) => {
-        if (res.data.code == 200) {
-          this.get_list(true);
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          this.tian_menu(this.menu).then((res) => {
+            if (res.data.code == 200) {
+              this.get_list(true).then((res) => {
+                this.$store.state.dialogFormVisible = false;
+              });
+            }
+          });
+        } else {
+          return false;
         }
       });
     },
@@ -131,15 +150,22 @@ export default {
         url: "",
         status: 1,
       };
+      this.$refs.ruleForm.resetFields();
     },
     gai() {
-      this.gai_menu_one_req(this.menu).then((res) => {
-        if (res.data.code == 200) {
-          this.get_list(true).then((res) => {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          this.gai_menu_one_req(this.menu).then((res) => {
             if (res.data.code == 200) {
-              this.$store.state.dialogFormVisible = false;
+              this.get_list(true).then((res) => {
+                if (res.data.code == 200) {
+                  this.$store.state.dialogFormVisible = false;
+                }
+              });
             }
           });
+        } else {
+          return false;
         }
       });
     },

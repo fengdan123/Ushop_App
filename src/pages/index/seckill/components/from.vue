@@ -6,14 +6,22 @@
       :visible.sync="$store.state.seckill_dialogFormVisible"
       @close="close"
     >
-      <el-form :model="seckill">
-        <el-form-item label="活动名称" :label-width="formLabelWidth">
+      <el-form :model="seckill" :rules="rules" ref="ruleForm">
+        <el-form-item
+          label="活动名称"
+          :label-width="formLabelWidth"
+          prop="title"
+        >
           <el-input v-model="seckill.title" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="活动期限" :label-width="formLabelWidth">
+        <el-form-item
+          label="活动期限"
+          :label-width="formLabelWidth"
+          prop="value1"
+        >
           <div class="block">
             <el-date-picker
-              v-model="value1"
+              v-model="seckill.value1"
               type="daterange"
               range-separator="至"
               start-placeholder="开始日期"
@@ -23,12 +31,16 @@
             </el-date-picker>
           </div>
         </el-form-item>
-        <el-form-item label="一级分类" :label-width="formLabelWidth">
+        <el-form-item
+          label="一级分类"
+          :label-width="formLabelWidth"
+          prop="first_cateid"
+        >
           <el-select
             v-model="seckill.first_cateid"
             @change="change(seckill.first_cateid)"
           >
-            <el-option :value="0" disabled label="---请选择---"
+            <el-option value disabled label="---请选择---"
               >---请选择---</el-option
             >
             <el-option
@@ -39,13 +51,17 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="二级分类" :label-width="formLabelWidth">
+        <el-form-item
+          label="二级分类"
+          :label-width="formLabelWidth"
+          prop="second_cateid"
+        >
           <el-select
             v-model="seckill.second_cateid"
             :disabled="second_cate.length != 0 ? false : true"
             @change="change1(seckill.second_cateid)"
           >
-            <el-option :value="0" disabled label="---请选择---"
+            <el-option value disabled label="---请选择---"
               >---请选择---</el-option
             >
             <div v-if="seckill.first_cateid != 0">
@@ -58,12 +74,12 @@
             </div>
           </el-select>
         </el-form-item>
-        <el-form-item label="商品" :label-width="formLabelWidth">
+        <el-form-item label="商品" :label-width="formLabelWidth" prop="goodsid">
           <el-select
             v-model="seckill.goodsid"
             :disabled="goods.length != 0 ? false : true"
           >
-            <el-option :value="0" disabled label="---请选择---"
+            <el-option value disabled label="---请选择---"
               >---请选择---</el-option
             >
             <el-option
@@ -114,22 +130,43 @@ export default {
         second_cateid: "",
         goodsid: "",
         status: 1,
+        value1: [],
       },
       formLabelWidth: "120px",
       second_cate: [],
       goods: [],
-      value1: [],
+      rules: {
+        title: [
+          { required: true, message: "请输入活动名称", trigger: "input" },
+        ],
+        value1: [
+          { required: true, message: "请选择活动期限", trigger: "change" },
+        ],
+        first_cateid: [
+          { required: true, message: "请选择一级分类", trigger: "change" },
+        ],
+        second_cateid: [
+          { required: true, message: "请选择二级分类", trigger: "change" },
+        ],
+        goodsid: [{ required: true, message: "请选择商品", trigger: "change" }],
+      },
     };
   },
   methods: {
     tian() {
-      this.seckill.begintime = this.value1[0];
-      this.seckill.endtime = this.value1[1];
-      this.tian_seckill(this.seckill).then((res) => {
-        if (res.data.code == 200) {
-          this.get_seckill_req(true).then((res) => {
-            this.$store.state.seckill_dialogFormVisible = false;
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          this.seckill.begintime = this.seckill.value1[0];
+          this.seckill.endtime = this.seckill.value1[1];
+          this.tian_seckill(this.seckill).then((res) => {
+            if (res.data.code == 200) {
+              this.get_seckill_req(true).then((res) => {
+                this.$store.state.seckill_dialogFormVisible = false;
+              });
+            }
           });
+        } else {
+          return false;
         }
       });
     },
@@ -150,25 +187,32 @@ export default {
         second_cateid: "",
         goodsid: "",
         status: 1,
+        value1: [],
       };
       this.second_cate = [];
       this.goods = [];
-      this.value1 = [];
+      this.$refs.ruleForm.resetFields();
     },
     gai() {
       this.gai_seckill_one_req(this.seckill).then((res) => {
-        if (res.data.code == 200) {
-          this.get_seckill_req(true).then((res) => {
+        this.$refs.ruleForm.validate((valid) => {
+          if (valid) {
             if (res.data.code == 200) {
-              this.$store.state.seckill_dialogFormVisible = false;
+              this.get_seckill_req(true).then((res) => {
+                if (res.data.code == 200) {
+                  this.$store.state.seckill_dialogFormVisible = false;
+                }
+              });
             }
-          });
-        }
+          } else {
+            return false;
+          }
+        });
       });
     },
     change(id) {
-      this.seckill.second_cateid = ""
-      this.seckill.goodsid = ""
+      this.seckill.second_cateid = "";
+      this.seckill.goodsid = "";
       let lis = this.cate_req.find((item) => {
         return item.id == id;
       });
@@ -183,7 +227,8 @@ export default {
       this.second_cate = lis.children;
     },
     change1(id) {
-      this.seckill.goodsid = ""
+      this.seckill.goodsid = "";
+      this.goods = []
       this.goods_req.forEach((item) => {
         if (item.second_cateid == id) {
           this.goods.push(item);
@@ -195,7 +240,7 @@ export default {
     ...mapGetters({
       cate_req: "gengxin_cate_req",
       goods_req: "gengxin_goods_req",
-      dialogFormVisible: "gengxin_seckill_dialogFormVisible"
+      dialogFormVisible: "gengxin_seckill_dialogFormVisible",
     }),
   },
   watch: {
@@ -204,8 +249,9 @@ export default {
         if (!this.$store.state.seckill_is_tian) {
           this.seckill = this.$store.state.seckill_one_req;
           this.seckill.id = this.$store.state.seckill_id;
-          this.$set(this.value1,0,this.seckill.begintime)
-          this.$set(this.value1,1,this.seckill.endtime)
+          this.seckill.value1 = []
+          this.$set(this.seckill.value1, 0, this.seckill.begintime);
+          this.$set(this.seckill.value1, 1, this.seckill.endtime);
           this.second_cate = this.$store.state.cate_req.find(
             (item) => item.id == this.seckill.first_cateid
           ).children;
