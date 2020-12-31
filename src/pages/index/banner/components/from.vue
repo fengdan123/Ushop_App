@@ -53,7 +53,6 @@
         >
         <el-button type="primary" @click="gai()" v-else>修 改</el-button>
       </div>
-      {{ banner }}
     </el-dialog>
   </div>
 </template>

@@ -4,13 +4,16 @@ import store from "../store"
 Vue.use(Router)
     //11.导出二级路由
 
+const originalPush = Router.prototype.push
+Router.prototype.push = function push(location) {
+    return originalPush.call(this, location).catch(err => err)
+}
+
 let hshu = (to, from, next) => {
     if (store.state.user_info.menus_url.includes(to.path.replace("/index", ""))) {
         next()
     } else {
-        if (from.path != "/login/home") {
-            router.push("/index/home")
-        }
+        router.push("/index/home")
     }
 }
 let er = [{

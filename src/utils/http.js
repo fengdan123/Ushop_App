@@ -9,7 +9,7 @@ Vue.prototype.$pre = "http://localhost:3000"
     // str = ""
     // Vue.prototype.$pre = ""
 let hshu = (res, obj) => {
-    if (res.data.list == null) {
+    if (res.data.list == null || res.data.list == "null") {
         res.data.list = []
     }
     if (res.data.code == 403) {
